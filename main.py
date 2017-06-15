@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+# coding=utf-8
+
+__author__ = 'yanxi'
+
+
+import sys, os
+
+from scrapy.cmdline import execute
+
+
+# filepath = os.path.dirname(os.path.abspath(__file__))    ＃ 取文件路径的父目录
+# print(filepath)   # /Users/TesterCC/Development/scrapy_workspace/ArticleSpider
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+execute(["scrapy", "crawl", "jobbole"])    # run command in terminal "scrapy crawl jobbole"
