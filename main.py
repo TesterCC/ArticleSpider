@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-__author__ = 'yanxi'
-
-
-import sys, os
-
+import sys
+import os
 from scrapy.cmdline import execute
 
 
