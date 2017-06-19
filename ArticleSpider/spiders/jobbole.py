@@ -3,6 +3,8 @@
 import scrapy
 import re
 
+
+# TARGET_URL = "http://blog.jobbole.com/108466/"
 class JobboleSpider(scrapy.Spider):
     name = "jobbole"
     allowed_domains = ["blog.jobbole.com"]
@@ -32,5 +34,5 @@ class JobboleSpider(scrapy.Spider):
             comment_nums = match_re.group(1)
 
         content = response.xpath("//div[@class='entry']").extract()[0]
-
+        # 16:11
         pass
