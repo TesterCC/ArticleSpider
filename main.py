@@ -11,4 +11,5 @@ from scrapy.cmdline import execute
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # execute(["scrapy", "crawl", "jobbole"])    # run command in terminal "scrapy crawl jobbole"
-execute(["scrapy", "crawl", "jobbole2"])    # run command in terminal "scrapy crawl jobbole2"
+# execute(["scrapy", "crawl", "jobbole2"])    # run command in terminal "scrapy crawl jobbole2"
+execute(["scrapy", "crawl", "jobbole3spider"])    # run command in terminal "scrapy crawl jobbole3spider"

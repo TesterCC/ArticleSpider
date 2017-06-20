@@ -19,20 +19,21 @@ class JobboleSpider(scrapy.Spider):
         # print(re3_selector.extract())      # 返回的中文文字乱码
         # print(re3_selector.extract()[0])
 
-        title = response.xpath("//div[@class='entry-header']/h1/text()").extract()[0]
+        # title = response.xpath("//div[@class='entry-header']/h1/text()").extract()[0]
+        title = response.xpath("//div[@class='entry-header']/h1/text()").extract_first()   # 可以对数组下标异常情况做处理
 
         create_date = response.xpath("//p[@class='entry-meta-hide-on-mobile']/text()").extract()[0].replace("·", "").strip()       # 处理/r/n空格，处理点号，处理空格
 
         praise_nums = response.xpath("//span[contains(@class, 'vote-post-up')]/h10/text()").extract()[0]
 
         fav_nums = response.xpath("//span[contains(@class, 'bookmark-btn')]/text()").extract()[0]
-        match_re = re.match(r".*(\d+).*", fav_nums)
+        match_re = re.match(r".*?(\d+).*", fav_nums)
         if match_re:
             fav_nums = match_re.group(1)
 
         comment_nums = response.xpath("//a[@href='#article-comment']/span/text()").extract()[0]
         # tag_list = response.xpath("//a[@href='#article-comment']/span").extract()
-        match_re = re.match(r".*(\d+).*", comment_nums)
+        match_re = re.match(r".*?(\d+).*", comment_nums)
         if match_re:
             comment_nums = match_re.group(1)
 

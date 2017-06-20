@@ -4,16 +4,29 @@ import scrapy
 import re
 
 
-# TARGET_URL = "http://blog.jobbole.com/108466/"
-# 进入scrapy shell交互调试模式: scrapy shell http://blog.jobbole.com/108466/
+# 进入scrapy shell交互调试模式: scrapy shell http://blog.jobbole.com/all-posts/
+# Python分布式爬虫打造搜索引擎 Scrapy精讲 4-8 4-9 编写spider爬取jobbole的所有文章
 
 
 class JobboleSpider(scrapy.Spider):
-    name = "jobbole2"
+    name = "jobbole3spider"
     allowed_domains = ["blog.jobbole.com"]
-    start_urls = ['http://blog.jobbole.com/108466/']
+    start_urls = ['http://blog.jobbole.com/all-posts/']   # Get all article http://blog.jobbole.com/all-posts/
 
     def parse(self, response):
+        """
+        1. 获取文章列表页中的文章url并交给scrapy下载后进行解析
+        2. 获取下一页的url并交给scrapy进行下载，下载完成后交给parse函数
+        """
+        # 解析列表页中的所有文章url并交给scrapy下载后并进行解析
+        # http://blog.jobbole.com/all-posts/
+        post_urls = response.css("#archive .floated-thumb .post-thumb a::attr(href)").extract()
+        for post_url in post_urls:
+            print(post_url)
+        # -- 4-8 10:30
+
+
+
         # use CSS Selector to locate Element
         # get title
         title = response.css(".entry-header h1::text").extract()[0]      # CSS伪类选择器::
