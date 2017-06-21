@@ -3,6 +3,8 @@
 import scrapy
 import re
 
+from urllib import parse
+from scrapy.http import Request
 
 # 进入scrapy shell交互调试模式: scrapy shell http://blog.jobbole.com/all-posts/
 # Python分布式爬虫打造搜索引擎 Scrapy精讲 4-8 4-9 编写spider爬取jobbole的所有文章
@@ -21,12 +23,15 @@ class JobboleSpider(scrapy.Spider):
         # 解析列表页中的所有文章url并交给scrapy下载后并进行解析
         # http://blog.jobbole.com/all-posts/
         post_urls = response.css("#archive .floated-thumb .post-thumb a::attr(href)").extract()
-        for post_url in post_urls:
-            print(post_url)
-        # -- 4-8 10:30
+        for post_url in post_urls:       # if don't include domain, may use -- response.url + post_url
+            yield Request(url=parse.urljoin(response.url, post_url), callback=self.parse_detail)
+            # print(post_url)
 
-
-
+        # 提取下一页并交给scrapy进行下载
+        next_urls = response.css("")
+#--here
+    def parse_detail(self, response):
+        # 提取文章的具体字段
         # use CSS Selector to locate Element
         # get title
         title = response.css(".entry-header h1::text").extract()[0]      # CSS伪类选择器::
