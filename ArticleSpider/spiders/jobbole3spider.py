@@ -27,9 +27,12 @@ class JobboleSpider(scrapy.Spider):
             yield Request(url=parse.urljoin(response.url, post_url), callback=self.parse_detail)
             # print(post_url)
 
-        # 提取下一页并交给scrapy进行下载
-        next_urls = response.css("")
-#--here
+        # 提取下一页link并交给scrapy进行下载
+        next_url = response.css(".next.page-numbers::attr(href)").extract_first("")      # .next.page-numbers 不加空格表示在同一节点
+        if next_url:
+            yield Request(url=parse.urljoin(response.url, post_url), callback=self.parse)
+
+
     def parse_detail(self, response):
         # 提取文章的具体字段
         # use CSS Selector to locate Element
@@ -43,12 +46,16 @@ class JobboleSpider(scrapy.Spider):
         fav_nums = response.css(".bookmark-btn::text").extract()[0]
         match_re = re.match(r".*?(\d+).*", fav_nums)
         if match_re:
-            fav_nums = match_re.group(1)
+            fav_nums = int(match_re.group(1))
+        else:
+            fav_nums = 0
 
         comment_nums = response.css("a[href='#article-comment'] span::text").extract()[0]    # ' 2 评论'
         match_re = re.match(r".*?(\d+).*", comment_nums)
         if match_re:
-            comment_nums = match_re.group(1)
+            comment_nums = int(match_re.group(1))
+        else:
+            comment_nums = 0
 
         content = response.css("div.entry").extract()[0]
 
@@ -57,5 +64,3 @@ class JobboleSpider(scrapy.Spider):
 
         tag_list = [element for element in tag_list if not element.strip().endswith("评论")]
         tags = ",".join(tag_list)     # '开发,数据科学,机器学习'
-
-        pass
