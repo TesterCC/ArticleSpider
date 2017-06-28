@@ -23,8 +23,11 @@ class JobboleSpider(scrapy.Spider):
         # 解析列表页中的所有文章url并交给scrapy下载后并进行解析
         # http://blog.jobbole.com/all-posts/
         post_urls = response.css("#archive .floated-thumb .post-thumb a::attr(href)").extract()
+        # 09:27
+        # front_image_url =
+
         for post_url in post_urls:       # if don't include domain, may use -- response.url + post_url
-            yield Request(url=parse.urljoin(response.url, post_url), callback=self.parse_detail)
+            yield Request(url=parse.urljoin(response.url, post_url), meta={"front_image_url"}, callback=self.parse_detail)
             # print(post_url)
 
         # 提取下一页link并交给scrapy进行下载
