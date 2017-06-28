@@ -6,6 +6,9 @@ import re
 from urllib import parse
 from scrapy.http import Request
 
+from ArticleSpider.items import JobBoleArticleItem
+
+
 # 进入scrapy shell交互调试模式: scrapy shell http://blog.jobbole.com/all-posts/
 # Python分布式爬虫打造搜索引擎 Scrapy精讲 4-8 4-9 编写spider爬取jobbole的所有文章
 
@@ -22,12 +25,17 @@ class JobboleSpider(scrapy.Spider):
         """
         # 解析列表页中的所有文章url并交给scrapy下载后并进行解析
         # http://blog.jobbole.com/all-posts/
-        post_urls = response.css("#archive .floated-thumb .post-thumb a::attr(href)").extract()
+
+        post_nodes = response.css("#archive .floated-thumb .post-thumb a")
+
         # 09:27
         # front_image_url =
 
-        for post_url in post_urls:       # if don't include domain, may use -- response.url + post_url
-            yield Request(url=parse.urljoin(response.url, post_url), meta={"front_image_url"}, callback=self.parse_detail)
+        for post_node in post_nodes:
+            image_url = post_node.css("img::attr(src)").extract_first("")
+            post_url = post_node.css("::attr(href)").extract_first("")
+
+            yield Request(url=parse.urljoin(response.url, post_url), meta={"front_image_url": image_url}, callback=self.parse_detail)
             # print(post_url)
 
         # 提取下一页link并交给scrapy进行下载
@@ -37,8 +45,18 @@ class JobboleSpider(scrapy.Spider):
 
 
     def parse_detail(self, response):
+
+        # 实例化JobBoleArticleItem
+        article_item = JobBoleArticleItem()
+
+
+
         # 提取文章的具体字段
         # use CSS Selector to locate Element
+
+        # 获取文章封面图
+        front_image_url = response.meta.get("front_image_url", "")
+
         # get title
         title = response.css(".entry-header h1::text").extract()[0]      # CSS伪类选择器::
 
@@ -67,3 +85,17 @@ class JobboleSpider(scrapy.Spider):
 
         tag_list = [element for element in tag_list if not element.strip().endswith("评论")]
         tags = ",".join(tag_list)     # '开发,数据科学,机器学习'
+
+
+        article_item["title"] = title    # in items.py
+        article_item["url"] = response.url
+        article_item["create_date"] = create_date
+        article_item["front_image_url"] = front_image_url
+        article_item["praise_nums"] = praise_nums
+        article_item["comment_nums"] = comment_nums
+        article_item["fav_nums"] = fav_nums
+        article_item["tags"] = tags
+        article_item["content"] = content
+
+        # call yield , article_item will transfer to pipelines
+        yield article_item    # 05:14 4-11
