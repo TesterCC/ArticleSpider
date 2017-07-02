@@ -7,6 +7,7 @@ from urllib import parse
 from scrapy.http import Request
 
 from ArticleSpider.items import JobBoleArticleItem
+from ArticleSpider.utils.common import get_md5
 
 
 # 进入scrapy shell交互调试模式: scrapy shell http://blog.jobbole.com/all-posts/
@@ -86,11 +87,11 @@ class JobboleSpider(scrapy.Spider):
         tag_list = [element for element in tag_list if not element.strip().endswith("评论")]
         tags = ",".join(tag_list)     # '开发,数据科学,机器学习'
 
-
-        article_item["title"] = title    # in items.py
+        article_item["url_object_id"] = get_md5(response.url)
+        article_item["title"] = title     # in items.py
         article_item["url"] = response.url
         article_item["create_date"] = create_date
-        article_item["front_image_url"] = front_image_url
+        article_item["front_image_url"] = [front_image_url]   # [front_image_url]
         article_item["praise_nums"] = praise_nums
         article_item["comment_nums"] = comment_nums
         article_item["fav_nums"] = fav_nums
@@ -98,4 +99,4 @@ class JobboleSpider(scrapy.Spider):
         article_item["content"] = content
 
         # call yield , article_item will transfer to pipelines
-        yield article_item    # 05:14 4-11
+        yield article_item

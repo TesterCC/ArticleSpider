@@ -1,4 +1,8 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+import os
+
 
 # Scrapy settings for ArticleSpider project
 #
@@ -66,7 +70,20 @@ ROBOTSTXT_OBEY = False
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    'ArticleSpider.pipelines.ArticlespiderPipeline': 300,
+   # 'scrapy.pipelines.images.ImagesPipeline': 1,
+    'ArticleSpider.pipelines.ArticleImagePipeline': 1,
 }
+
+project_dir = os.path.abspath(os.path.dirname(__file__))
+
+IMAGES_URLS_FIELD = 'front_image_url'     # 传到pipeline时将这个值当数组处理
+IMAGES_STORE = os.path.join(project_dir, 'images')
+# print(">>>>>>>>>>>>>>>>>"+IMAGES_STORE)
+
+# download pictures must bigger 100x100
+# IMAGES_MIN_HEIGHT = 100
+# IMAGES_MIN_WIDTH = 100
+
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html

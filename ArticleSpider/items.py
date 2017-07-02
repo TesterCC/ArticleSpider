@@ -19,7 +19,7 @@ class JobBoleArticleItem(scrapy.Item):
     title = scrapy.Field()    # 统一Field()
     create_date = scrapy.Field()
 
-    url = scrapy.Field()    # url长度是变化的，用md5处理可以固定长度
+    url = scrapy.Field()    # url长度是变化的，用md5处理可以使URL变成唯一且长度固定的值 
     url_object_id = scrapy.Field()
 
     front_image_url = scrapy.Field()
