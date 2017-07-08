@@ -12,6 +12,7 @@ import MySQLdb
 
 from scrapy.pipelines.images import ImagesPipeline
 from scrapy.exporters import JsonItemExporter
+from twisted.enterprise import adbapi
 
 
 class ArticlespiderPipeline(object):
@@ -51,6 +52,7 @@ class JsonExporterPipeline(object):
 
 # 数据相关的存储自定义Pipeline完成
 class MysqlPipeline(object):
+    # 实例化时链接数据库
     def __init__(self):
         self.conn = MySQLdb.connect('127.0.0.1', 'root', 'yanxi76543210', 'article_spider', charset="utf8", use_unicode=True)
         self.cursor = self.conn.cursor()
@@ -64,14 +66,53 @@ class MysqlPipeline(object):
         # self.cursor.execute(insert_sql, (item["title"], item["create_date"], item["url"], item["url_object_id"], item["front_image_url"], item["front_image_path"], item["comment_nums"], item["fav_nums"], item["praise_nums"], item["tags"], item["content"]))
 
         insert_sql = """
-            insert into jobbole_article(title, create_date, url, comment_nums, fav_nums, praise_nums, tags)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            insert into jobbole_article(title, url, create_date, fav_nums) 
+            VALUES (%s, %s, %s, %s)
         """
-        self.cursor.execute(insert_sql, (item["title"], item["create_date"], item["url"], item["comment_nums"], item["fav_nums"], item["praise_nums"], item["tags"]))
 
+        self.cursor.execute(insert_sql, (item["title"], item["url"], item["create_date"],  item["fav_nums"]))
         self.conn.commit()
 
-        # wait to test 4-14 07:09
+        # this method is not good, because if crawler get much urls, insert speed is slower than craw speed, will cause data jamming.
+
+# Mysql插入异步化
+# Mysql config can write in settings.
+class MysqlTwistedPipeline(object):
+    def __init__(self, dbpool):
+        self.dbpool = dbpool
+
+    # 自定义组建和扩展时有用   Twisted只提供异步容器，调用还是用MySQL库
+    @classmethod
+    def from_settings(cls, settings):
+        dbparams = dict(
+            host=settings["MYSQL_HOST"],
+            db=settings["MYSQL_DBNAME"],
+            user=settings["MYSQL_USER"],
+            passwd=settings["MYSQL_PASSWORD"],
+            charset='utf8',
+            cursorclass=MySQLdb.cursors.DictCursor,
+            use_unicode=True,
+            )
+        dbpool = adbapi.ConnectionPool("MySQLdb", **dbparams)
+        return cls(dbpool)
+
+    # 重载  记得对应items.py
+    def process_item(self, item, spider):
+        # 使用twisted将mysql插入变成异步执行
+        query = self.dbpool.runInteraction(self.do_insert, item)
+        # 4-15 08:30
+
+
+    def do_insert(self, cursor, item):
+        # 执行具体的插入
+        insert_sql = """
+            insert into jobbole_article(title, url, create_date, fav_nums) 
+            VALUES (%s, %s, %s, %s)
+        """
+
+        cursor.execute(insert_sql, (item["title"], item["url"], item["create_date"],  item["fav_nums"]))
+
+
 
 
 class ArticleImagePipeline(ImagesPipeline):

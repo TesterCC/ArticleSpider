@@ -74,7 +74,8 @@ ITEM_PIPELINES = {
    #  'ArticleSpider.pipelines.JsonExporterPipeline': 3,
    # 'scrapy.pipelines.images.ImagesPipeline': 1,
    #  'ArticleSpider.pipelines.ArticleImagePipeline': 1,
-    'ArticleSpider.pipelines.MysqlPipeline': 1,
+   #  'ArticleSpider.pipelines.MysqlPipeline': 1,
+    'ArticleSpider.pipelines.MysqlTwistedPipeline': 1,
 }
 
 project_dir = os.path.abspath(os.path.dirname(__file__))
@@ -108,3 +109,10 @@ IMAGES_STORE = os.path.join(project_dir, 'images')
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+# MySQL config
+MYSQL_HOST = '127.0.0.1'
+MYSQL_DBNAME = 'jobbole_article'
+MYSQL_USER = 'root'
+MYSQL_PASSWORD = "yanxi76543210"
+
