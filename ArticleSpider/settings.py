@@ -112,7 +112,7 @@ IMAGES_STORE = os.path.join(project_dir, 'images')
 
 # MySQL config
 MYSQL_HOST = '127.0.0.1'
-MYSQL_DBNAME = 'jobbole_article'
+MYSQL_DBNAME = 'article_spider'
 MYSQL_USER = 'root'
 MYSQL_PASSWORD = "yanxi76543210"
 

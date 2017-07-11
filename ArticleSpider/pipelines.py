@@ -9,6 +9,7 @@ import codecs
 import json
 
 import MySQLdb
+import MySQLdb.cursors
 
 from scrapy.pipelines.images import ImagesPipeline
 from scrapy.exporters import JsonItemExporter
@@ -52,6 +53,7 @@ class JsonExporterPipeline(object):
 
 # 数据相关的存储自定义Pipeline完成
 class MysqlPipeline(object):
+    # 采用同步的机制写入mysql
     # 实例化时链接数据库
     def __init__(self):
         self.conn = MySQLdb.connect('127.0.0.1', 'root', 'yanxi76543210', 'article_spider', charset="utf8", use_unicode=True)
@@ -78,6 +80,7 @@ class MysqlPipeline(object):
 # Mysql插入异步化
 # Mysql config can write in settings.
 class MysqlTwistedPipeline(object):
+    # 采用异步的机制写入Mysql
     def __init__(self, dbpool):
         self.dbpool = dbpool
 
@@ -100,7 +103,11 @@ class MysqlTwistedPipeline(object):
     def process_item(self, item, spider):
         # 使用twisted将mysql插入变成异步执行
         query = self.dbpool.runInteraction(self.do_insert, item)
-        # 4-15 08:30
+        query.addErrback(self.handle_error)    # handle error
+
+    # add self asynchronization handle error function
+    def handle_error(self, failure):
+        print(failure)    # 处理异步插入的异常
 
 
     def do_insert(self, cursor, item):
