@@ -7,11 +7,13 @@
 # http://doc.scrapy.org/en/latest/topics/items.html
 
 import datetime
+import re
 
 import scrapy
 from scrapy.loader import ItemLoader
 from scrapy.loader.processors import MapCompose
 from scrapy.loader.processors import TakeFirst
+from scrapy.loader.processors import Join
 
 
 class ArticlespiderItem(scrapy.Item):
@@ -35,29 +37,64 @@ def date_convert(value):
     return create_date
 
 
-# 自定义Item loader，使字段只取第一个
-# class ArticleItemLoader(ItemLoader):
-# 4-17 5:05
+# nums可以通用
+def get_nums(value):
+    match_re = re.match(r".*?(\d+).*", value)
+    if match_re:
+        nums = int(match_re.group(1))
+    else:
+        nums = 0
+    return nums
 
+
+def remove_comment_tags(value):
+    # 去掉tag中提取到的评论
+    if "评论" in value:
+        return ""
+    else:
+        return value
+
+
+def return_value(value):
+    return value
+
+# 自定义Item loader，使字段只取第一个
+class ArticleItemLoader(ItemLoader):
+    # 自定义Item loader  -- jobbole5
+    default_output_processor = TakeFirst()
+
+
+# 运用自带Item loader
 class JobBoleArticleItem(scrapy.Item):
     title = scrapy.Field(
         # input_processor=MapCompose(lambda x:x+"-jobbole")
         # input_processor=MapCompose(add_jobbole)
-        input_processor=MapCompose(lambda x: x+"-jobbole", add_jobbole)
+        # input_processor=MapCompose(lambda x: x+"-jobbole", add_jobbole)
     )    # 统一Field()
     create_date = scrapy.Field(
         input_processor=MapCompose(date_convert),
-        output_processor=TakeFirst()    # 只取第一个
+        # output_processor=TakeFirst()    # 只取第一个   , jobbole5customloader no need.
     )
 
     url = scrapy.Field()    # url长度是变化的，用md5处理可以使URL变成唯一且长度固定的值 
     url_object_id = scrapy.Field()
 
-    front_image_url = scrapy.Field()
+    front_image_url = scrapy.Field(
+        output_processor=MapCompose(return_value),   # return front_image_url原值，覆盖default_output_processor = TakeFirst()
+    )
     front_image_path = scrapy.Field()
-    praise_nums = scrapy.Field()
-    comment_nums = scrapy.Field()
-    fav_nums = scrapy.Field()
-    tags = scrapy.Field()
+    praise_nums = scrapy.Field(
+        input_processor=MapCompose(get_nums),
+    )
+    comment_nums = scrapy.Field(
+        input_processor=MapCompose(get_nums),
+    )
+    fav_nums = scrapy.Field(
+        input_processor=MapCompose(get_nums),
+    )
+    tags = scrapy.Field(
+        input_processor=MapCompose(remove_comment_tags),
+        output_processor=Join(","),
+    )
     content = scrapy.Field()
 

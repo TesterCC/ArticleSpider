@@ -120,11 +120,11 @@ class MysqlTwistedPipeline(object):
         cursor.execute(insert_sql, (item["title"], item["url"], item["create_date"],  item["fav_nums"]))
 
 
-
-
 class ArticleImagePipeline(ImagesPipeline):
     def item_completed(self, results, item, info):
-        for ok, value in results:          # result is tuple
-            image_file_path = value["path"]
-        item["front_image_path"] = image_file_path
+        # 增加容错性
+        if "front_image_url" in item:
+            for ok, value in results:          # result is tuple
+                image_file_path = value["path"]
+            item["front_image_path"] = image_file_path
         return item
