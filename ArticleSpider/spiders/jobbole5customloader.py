@@ -54,57 +54,59 @@ class JobboleSpider(scrapy.Spider):
         # use CSS Selector to locate Element
 
         # 获取文章封面图
-        front_image_url = response.meta.get("front_image_url", "")
-
-        # get title
-        title = response.css(".entry-header h1::text").extract()[0]      # CSS伪类选择器::
-
-        create_date = response.css("p.entry-meta-hide-on-mobile::text").extract()[0].replace("·", "").strip()      # 处理/r/n空格，处理点号，处理空格
-
-        praise_nums = response.css(".vote-post-up h10::text").extract()[0]     # ' 2 收藏'
-
-        fav_nums = response.css(".bookmark-btn::text").extract()[0]
-        match_re = re.match(r".*?(\d+).*", fav_nums)
-        if match_re:
-            fav_nums = int(match_re.group(1))
-        else:
-            fav_nums = 0
-
-        comment_nums = response.css("a[href='#article-comment'] span::text").extract()[0]    # ' 2 评论'
-        match_re = re.match(r".*?(\d+).*", comment_nums)
-        if match_re:
-            comment_nums = int(match_re.group(1))
-        else:
-            comment_nums = 0
-
-        content = response.css("div.entry").extract()[0]
-
-        # tag = response.css("p.entry-meta-hide-on-mobile a::text").extract()[0]    # '开发'
-        tag_list = response.css("p.entry-meta-hide-on-mobile a::text").extract()   # ['开发', ' 2 评论 ', '数据科学', '机器学习']
-
-        tag_list = [element for element in tag_list if not element.strip().endswith("评论")]
-        tags = ",".join(tag_list)     # '开发,数据科学,机器学习'
-
-        article_item["url_object_id"] = get_md5(response.url)
-        article_item["title"] = title     # in items.py
-        article_item["url"] = response.url
-
-        # need to convert create_date str to date
-        try:
-            create_date = datetime.datetime.strptime(create_date, "%Y/%m/%d").date()
-        except Exception as e:
-            create_date = datetime.datetime.now().date()
-
-        article_item["create_date"] = create_date
-
-        article_item["front_image_url"] = [front_image_url]   # [front_image_url]
-        article_item["praise_nums"] = praise_nums
-        article_item["comment_nums"] = comment_nums
-        article_item["fav_nums"] = fav_nums
-        article_item["tags"] = tags
-        article_item["content"] = content
+        # front_image_url = response.meta.get("front_image_url", "")
+        #
+        # # get title
+        # title = response.css(".entry-header h1::text").extract()[0]      # CSS伪类选择器::
+        #
+        # create_date = response.css("p.entry-meta-hide-on-mobile::text").extract()[0].replace("·", "").strip()      # 处理/r/n空格，处理点号，处理空格
+        #
+        # praise_nums = response.css(".vote-post-up h10::text").extract()[0]     # ' 2 收藏'
+        #
+        # fav_nums = response.css(".bookmark-btn::text").extract()[0]
+        # match_re = re.match(r".*?(\d+).*", fav_nums)
+        # if match_re:
+        #     fav_nums = int(match_re.group(1))
+        # else:
+        #     fav_nums = 0
+        #
+        # comment_nums = response.css("a[href='#article-comment'] span::text").extract()[0]    # ' 2 评论'
+        # match_re = re.match(r".*?(\d+).*", comment_nums)
+        # if match_re:
+        #     comment_nums = int(match_re.group(1))
+        # else:
+        #     comment_nums = 0
+        #
+        # content = response.css("div.entry").extract()[0]
+        #
+        # # tag = response.css("p.entry-meta-hide-on-mobile a::text").extract()[0]    # '开发'
+        # tag_list = response.css("p.entry-meta-hide-on-mobile a::text").extract()   # ['开发', ' 2 评论 ', '数据科学', '机器学习']
+        #
+        # tag_list = [element for element in tag_list if not element.strip().endswith("评论")]
+        # tags = ",".join(tag_list)     # '开发,数据科学,机器学习'
+        #
+        # article_item["url_object_id"] = get_md5(response.url)
+        # article_item["title"] = title     # in items.py
+        # article_item["url"] = response.url
+        #
+        # # need to convert create_date str to date
+        # try:
+        #     create_date = datetime.datetime.strptime(create_date, "%Y/%m/%d").date()
+        # except Exception as e:
+        #     create_date = datetime.datetime.now().date()
+        #
+        # article_item["create_date"] = create_date
+        #
+        # article_item["front_image_url"] = [front_image_url]   # [front_image_url]
+        # article_item["praise_nums"] = praise_nums
+        # article_item["comment_nums"] = comment_nums
+        # article_item["fav_nums"] = fav_nums
+        # article_item["tags"] = tags
+        # article_item["content"] = content
 
         # 通过item loader加载item
+        front_image_url = response.meta.get("front_image_url", "")   # 文章封面图
+
         # 加载自定义item不能继承自ItemLoader，而是继承ArticleItemLoader
         item_loader = ArticleItemLoader(item=JobBoleArticleItem(), response=response)
         # item_loader.add_xpath()
