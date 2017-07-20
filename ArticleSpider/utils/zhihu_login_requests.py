@@ -35,9 +35,11 @@ def is_login():
     inbox_url = "https://www.zhihu.com/inbox"
     response = session.get(inbox_url, headers=header, allow_redirects=False)     # allow_redirects default is True
     if response.status_code != 200:    # if login success , it will return 200 OK, if return 302, it means login failed.
-        return False
+        # return False
+        return "Login Failed."
     else:
-        return True
+        # return True
+        return "Login Success."
 
 
 def get_xsrf():
@@ -66,14 +68,30 @@ def get_index():
 
 
 def get_captcha():
+    # https://www.zhihu.com/captcha.gif?r=1492648311082&type=login&lang=en   英文验证码四位字母
+    # https://www.zhihu.com/captcha.gif?r=1492648311082&type=login&lang=cn   倒立汉字
     import time
-    t = str(int(time.time()*1000))
-    captcha_url = "https://www.zhihu.com/captcha.git?r={0}&type=login".format(t)
+    t = str(int(time.time()*1000))     # 默认情况下python的时间戳是以秒为单位输出的float,通过把秒转换毫秒的方法获得13位的Unix时间戳
+    # t = str(round(time.time() * 1000))
+    captcha_url = "https://www.zhihu.com/captcha.gif?r={0}&type=login&lang=en".format(t)
+    print(captcha_url)
     t = session.get(captcha_url, headers=header)
     with open("captcha.jpg", "wb") as f:
         f.write(t.content)
         f.close()
-    pass   # 5-11 can not get captcha.jpg, may use zhiye lib
+
+    from PIL import Image
+    try:
+        im = Image.open('captcha.jpg')
+        im.show()
+        im.close()
+    except:
+        return "Image Handle Error."
+
+    captcha = input("请输入英文字母验证码\n>>")
+    return captcha
+
+
 
 
 # match moblie num, ^1\d{10}
@@ -87,8 +105,8 @@ def zhihu_login(account, password):
         post_data = {
             "_xsrf": get_xsrf(),
             "phone_num": account,
-            "password": password
-            # "captcha_type": "cn"
+            "password": password,
+            "captcha": get_captcha()
         }
 
         # time.sleep(3)
@@ -102,7 +120,7 @@ def zhihu_login(account, password):
                 "_xsrf": get_xsrf(),
                 "email": account,
                 "password": password,
-                "captcha": ""
+                "captcha": get_captcha()
             }
     # create post request
     response_text = session.post(post_url, data=post_data, headers=header)
@@ -113,8 +131,9 @@ def zhihu_login(account, password):
 if __name__ == '__main__':
     # get_xsrf()
     # zhihu_login("te", "")
-    # zhihu_login("135", "")
+    zhihu_login("13", "-")
+    # get_captcha()
+    print(is_login())   # return test result
     # get_index()
-    # is_login()
-    get_captcha()
+
 
