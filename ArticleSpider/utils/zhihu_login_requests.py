@@ -92,8 +92,6 @@ def get_captcha():
     return captcha
 
 
-
-
 # match moblie num, ^1\d{10}
 # video match mobile num, here match e-mail [0-9a-zA-Z_]{0,19}@foxmail.com
 # match all email address, ^[0-9a-zA-Z_]{0,19}@[0-9a-zA-Z]{1,13}\.[com,cn,net]{1,3}$
@@ -131,7 +129,7 @@ def zhihu_login(account, password):
 if __name__ == '__main__':
     # get_xsrf()
     # zhihu_login("te", "")
-    zhihu_login("13", "-")
+    zhihu_login("10", "-7-")
     # get_captcha()
     print(is_login())   # return test result
     # get_index()
