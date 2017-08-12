@@ -26,6 +26,7 @@ class ZhihuSpider(scrapy.Spider):
         "User-Agent": agent
     }
 
+
     def parse(self, response):
         """
         提取出html页面中的所有url 并跟踪这些url进行进一步爬取
@@ -68,12 +69,19 @@ class ZhihuSpider(scrapy.Spider):
         else:
             return "Match failed."
 
+        # Attention Security
+        zhihu_username = "Your zhihu username"
+        zhihu_password = "Your zhihu password"
+        zhihu_username = "1"
+        zhihu_password = "-"
+
+
         if xsrf:
             post_url = "https://www.zhihu.com/login/phone_num"  # video url, phone number login
             post_data = {
                 "_xsrf": xsrf,
-                "phone_num": "13551856640",
-                "password": "-TesterCC07-",
+                "phone_num": zhihu_username,
+                "password": zhihu_password,
                 "captcha": ""
             }
 
