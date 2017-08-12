@@ -1,9 +1,18 @@
 # -*- coding: utf-8 -*-
 
 import re
-import scrapy
 import json
 
+# from urllib import parse      # python3, python2 use "import urlparse"
+# 兼容的import写法
+
+try:
+    import urlparse as parse
+except:
+    from urllib import parse
+
+
+import scrapy
 
 class ZhihuSpider(scrapy.Spider):
     name = "zhihu"
@@ -18,10 +27,27 @@ class ZhihuSpider(scrapy.Spider):
     }
 
     def parse(self, response):
-        pass
+        """
+        提取出html页面中的所有url 并跟踪这些url进行进一步爬取
+        如果提取的url中格式为/question/xxx 就下载之后直接进入解析函数
+        """
+        all_urls = response.css("a::attr(href)").extract()
+        all_urls = [parse.urljoin(response.url, url) for url in all_urls]    # 通过response.url获取主域名
+        all_urls = filter(lambda x: True if x.startswith("https") else False, all_urls)
+        for url in all_urls:
+            # print(url)     # for Debug
+            match_obj = re.match("(.*zhihu.com/question/(\d+))(/|$).*", url)
+            if match_obj:
+                request_url = match_obj.group(1)
+                question_id = match_obj.group(2)
+                # print(request_url, question_id)    # for Debug
 
-    def parse_detail(self, response):
-        # 解析真正需要解析数据的页面
+                # scrapy中通过yield将requests提交给下载器
+                yield scrapy.Request(request_url, headers=self.headers, callback=self.parse_question)
+
+    def parse_question(self, response):
+        # 处理question页面，从页面中提取出具体的question item
+        # 01:45
         pass
 
     def start_requests(self):
