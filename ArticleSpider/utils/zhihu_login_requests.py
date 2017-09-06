@@ -129,7 +129,10 @@ def zhihu_login(account, password):
 if __name__ == '__main__':
     # get_xsrf()
     # zhihu_login("te", "")
-    zhihu_login("Your zhihu username", "Your zhihu password")
+    username = input("Pleaes input username:\n")
+    password = input("Pleaes input password:\n")
+    # print(type(username))   # <class 'str'>
+    zhihu_login(username, password)
     # get_captcha()
     print(is_login())   # return test result
     # get_index()

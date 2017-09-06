@@ -9,6 +9,7 @@ from urllib import parse
 from scrapy.http import Request
 from scrapy.loader import ItemLoader
 
+
 from ArticleSpider.items import JobBoleArticleItem, ArticleItemLoader
 from ArticleSpider.utils.common import get_md5
 

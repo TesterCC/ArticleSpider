@@ -4,15 +4,19 @@ import re
 import json
 
 # from urllib import parse      # python3, python2 use "import urlparse"
-# 兼容的import写法
+# 兼容Python2和Python3的import写法
 
 try:
     import urlparse as parse
 except:
     from urllib import parse
 
-
 import scrapy
+
+from scrapy.loader import ItemLoader
+from ..items import ZhihuQuestionItem, ZhihuAnswerItem
+
+
 
 class ZhihuSpider(scrapy.Spider):
     name = "zhihu"
@@ -48,8 +52,26 @@ class ZhihuSpider(scrapy.Spider):
 
     def parse_question(self, response):
         # 处理question页面，从页面中提取出具体的question item
-        # 01:45
-        pass
+        match_obj = re.match("(.*zhihu.com/question/(\d+))(/|$).*", response.url)
+        if match_obj:
+            question_id = int(match_obj.group(2))    # question_id在数据库中是int类型，传入前最好先处理好
+
+        if "QuestionHeader-title" in response.text:
+            # 处理新版本
+            item_loader = ItemLoader(item=ZhihuQuestionItem(), response=response)
+            item_loader.add_css("title", "h1.QuestionHeader-title::text")
+            item_loader.add_css("content", ".QuestionHeader-detail")    # 取html内容，不用伪类选择器
+            item_loader.add_value("url", response.url)
+            item_loader.add_value("zhihu_id", question_id)
+            item_loader.add_css("answer_num", ".List-headerText span::text")
+            item_loader.add_css("comments_num", ".QuestionHeader-Comment button::text")
+            item_loader.add_css("watch_user_num", ".NumberBoard-value::text")    # return a list
+            item_loader.add_css("topics", ".QuestionHeader-topics .Popover::text")   # 子带元素中寻找元素
+
+            question_item = item_loader.load_item()
+        else:
+            # 处理知乎旧版本页面的item提取
+            pass
 
     def start_requests(self):
         # get_xsrf method1，用之前写的zhihu_login_requests.py - def get_xsrf()
@@ -70,18 +92,15 @@ class ZhihuSpider(scrapy.Spider):
             return "Match failed."
 
         # Attention Security
-        zhihu_username = "Your zhihu username"
-        zhihu_password = "Your zhihu password"
-        zhihu_username = "1"
-        zhihu_password = "-"
-
+        username = input("Pleaes input username:\n>>")     # e-mail or mobile phone number
+        password = input("Pleaes input password:\n>>")
 
         if xsrf:
             post_url = "https://www.zhihu.com/login/phone_num"  # video url, phone number login
             post_data = {
                 "_xsrf": xsrf,
-                "phone_num": zhihu_username,
-                "password": zhihu_password,
+                "phone_num": username,
+                "password": password,
                 "captcha": ""
             }
 
@@ -112,7 +131,6 @@ class ZhihuSpider(scrapy.Spider):
         post_data = response.meta.get("post_data")
         post_url = "https://www.zhihu.com/login/phone_num"
         post_data["captcha"] = captcha
-
 
         # FormRequest()可以完成表单提交
         return [scrapy.FormRequest(
