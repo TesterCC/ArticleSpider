@@ -58,6 +58,7 @@ def remove_comment_tags(value):
 def return_value(value):
     return value
 
+
 # 自定义Item loader，使字段只取第一个
 class ArticleItemLoader(ItemLoader):
     # 自定义Item loader  -- jobbole5
@@ -107,6 +108,7 @@ class ZhihuQuestionItem(scrapy.Item):
     title = scrapy.Field()
     content = scrapy.Field()
     answer_num = scrapy.Field()
+    comments_num = scrapy.Field()
     watch_user_num = scrapy.Field()
     click_num = scrapy.Field()
     crawl_time = scrapy.Field()
@@ -121,7 +123,7 @@ class ZhihuAnswerItem(scrapy.Item):
     content = scrapy.Field()
     praise_num = scrapy.Field()
     comments_num = scrapy.Field()
-    creat_time = scrapy.Field()
+    create_time = scrapy.Field()
     update_time = scrapy.Field()
     crawl_time = scrapy.Field()
 
