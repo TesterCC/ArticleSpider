@@ -2,6 +2,7 @@
 
 import re
 import json
+import datetime
 
 # from urllib import parse      # python3, python2 use "import urlparse"
 # 兼容Python2和Python3的import写法
@@ -36,6 +37,11 @@ class ZhihuSpider(scrapy.Spider):
         """
         提取出html页面中的所有url 并跟踪这些url进行进一步爬取
         如果提取的url中格式为/question/xxx 就下载之后直接进入解析函数
+        其实是深度优先的爬虫逻辑
+        1.提取出全部的URL
+        2.过滤出不需要的URL
+        3.然后在剩下的URL中遍历，发现question url就进一步跟踪
+        4.item到pipeline，request路由到下载器进行下载
         """
         all_urls = response.css("a::attr(href)").extract()
         all_urls = [parse.urljoin(response.url, url) for url in all_urls]    # 通过response.url获取主域名
@@ -93,19 +99,42 @@ class ZhihuSpider(scrapy.Spider):
 
             question_item = item_loader.load_item()
 
-        yield scrapy.Request(self.start_answer_url.format(question_id, 20, 0), callback=self.parse_answer)
+        yield scrapy.Request(self.start_answer_url.format(question_id, 20, 0), headers=self.headers, callback=self.parse_answer)
         yield question_item
 
     def parse_answer(self, response):
         # 处理question的answer
         ans_json = json.loads(response.text)
-        is_end = ans_json["paging"]["is_end"]    # 判断后续是否还有页面需要请求  ＃2:31
+        is_end = ans_json["paging"]["is_end"]    # 判断后续是否还有页面需要请求
+        # total_answer = ans_json["paging"]["totals"]
+        next_url = ans_json["paging"]["is_end"]
 
+        # 提取answer的具体字段
+        for answer in ans_json["data"]:
+            answer_item = ZhihuAnswerItem()
+            answer_item['zhihu_id'] = answer["id"]
+            answer_item['url'] = answer["url"]
+            answer_item['question_id'] = answer["question"]["id"]
+            answer_item['author_id'] = answer["author"]["id"] if "id" in answer["author"] else None   # 匿名提问者现在是id=0
+            answer_item['content'] = answer["content"] if "content" in answer else None
+            answer_item['praise_num'] = answer["voteup_count"]
+            answer_item['comments_num'] = answer["comment_count"]
+            answer_item['create_time'] = answer["created_time"]
+            answer_item['update_time'] = answer["updated_time"]
+            answer_item['crawl_time'] = datetime.datetime.now()    # current time
+
+            yield answer_item     # yield出去交给pipeline处理
+
+        if not is_end:
+            yield scrapy.Request(next_url, headers=self.headers, callback=self.parse_answer)
+
+
+    # crawler entery
     def start_requests(self):
         # get_xsrf method1，用之前写的zhihu_login_requests.py - def get_xsrf()
         # get xsrf method2, 利用scrapy提供的异步URL
         # https://www.zhihu.com/#signin  login page
-        return [scrapy.Request("https://www.zhihu.com/#signin", headers=self.headers, callback=self.login)]
+        return [scrapy.Request("https://www.zhihu.com/#signin", headers=self.headers, callback=self.login)]     # 异步io用callback执行下一步
 
     def login(self, response):
         response_text = response.text
@@ -120,10 +149,8 @@ class ZhihuSpider(scrapy.Spider):
             return "Match failed."
 
         # Attention Security
-        # username = input("Pleaes input username:\n>>")     # e-mail or mobile phone number
-        # password = input("Pleaes input password:\n>>")
-        username = ("13551856640")     # only email，因为下面post_url访问的是phone_num登录入口
-        password = ("-TesterCC07-")
+        username = input("Pleaes input username(phone):\n>>")     # only mobile phone，因为下面post_url访问的是phone_num登录入口
+        password = input("Pleaes input password:\n>>")
 
         if xsrf:
             post_url = "https://www.zhihu.com/login/phone_num"  # video url, phone number login
@@ -170,11 +197,12 @@ class ZhihuSpider(scrapy.Spider):
             callback=self.check_login  # 不传递函数调用，只传递函数名称
         )]
 
+
     def check_login(self, response):
         # 验证服务器的返回数据判断是否成功
         text_json = json.loads(response.text)     # 反序列化 byte -> obj
-        if "msg" in text_json and text_json["msg"] == "登录成功":
+        if "msg" in text_json and text_json["msg"] == "登录成功":           # 登录失败则爬虫停止
             for url in self.start_urls:
-                yield scrapy.Request(url, dont_filter=True, headers=self.headers)    # 不写callback=XX,回调默认调parse()
+                yield scrapy.Request(url, dont_filter=True, headers=self.headers)    # headers很重要，不写callback=XX,回调默认调parse()
 
 
