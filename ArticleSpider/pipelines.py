@@ -77,6 +77,7 @@ class MysqlPipeline(object):
 
         # this method is not good, because if crawler get much urls, insert speed is slower than craw speed, will cause data jamming.
 
+
 # Mysql插入异步化
 # Mysql config can write in settings.
 class MysqlTwistedPipeline(object):
@@ -109,9 +110,10 @@ class MysqlTwistedPipeline(object):
     def handle_error(self, failure):
         print(failure)    # 处理异步插入的异常
 
-
     def do_insert(self, cursor, item):
         # 执行具体的插入
+        # 根据不同的item构建不同的sql语句并插入到mysql中
+        # if item.__class__.__name__ == 'JobBoleArticleItem':   # 5-13 4:49
         insert_sql = """
             insert into jobbole_article(title, url, create_date, fav_nums) 
             VALUES (%s, %s, %s, %s)
