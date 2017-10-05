@@ -87,7 +87,7 @@ class MysqlTwistedPipeline(object):
 
     # 自定义组建和扩展时有用   Twisted只提供异步容器，调用还是用MySQL库
     @classmethod
-    def from_settings(cls, settings):
+    def from_settings(cls, settings):    # 从settings中读取MySQL的配置, 然后实例化MysqlTwistedPipeline
         dbparams = dict(
             host=settings["MYSQL_HOST"],
             db=settings["MYSQL_DBNAME"],
@@ -104,22 +104,28 @@ class MysqlTwistedPipeline(object):
     def process_item(self, item, spider):
         # 使用twisted将mysql插入变成异步执行
         query = self.dbpool.runInteraction(self.do_insert, item)
-        query.addErrback(self.handle_error)    # handle error
+        query.addErrback(self.handle_error, item, spider)    # handle error
 
     # add self asynchronization handle error function
-    def handle_error(self, failure):
-        print(failure)    # 处理异步插入的异常
+    def handle_error(self, failure, item, spider):
+        print(failure)    # 处理异步插入的异常，可能是找到错误原因的根本入口
 
     def do_insert(self, cursor, item):
         # 执行具体的插入
         # 根据不同的item构建不同的sql语句并插入到mysql中
-        # if item.__class__.__name__ == 'JobBoleArticleItem':   # 5-13 4:49
-        insert_sql = """
-            insert into jobbole_article(title, url, create_date, fav_nums) 
-            VALUES (%s, %s, %s, %s)
-        """
+        # if item.__class__.__name__ == 'JobBoleArticleItem':   # 5-13 4:49 not recommend
 
-        cursor.execute(insert_sql, (item["title"], item["url"], item["create_date"],  item["fav_nums"]))
+        # insert_sql = """
+        #     insert into jobbole_article(title, url, create_date, fav_nums)
+        #     VALUES (%s, %s, %s, %s)
+        # """
+
+        # call ge_sql()
+        insert_sql, params = item.get_insert_sql()
+
+        # for jobbole test
+        # cursor.execute(insert_sql, (item["title"], item["url"], item["create_date"], item["fav_nums"]))
+        cursor.execute(insert_sql, params)
 
 
 class ArticleImagePipeline(ImagesPipeline):
