@@ -169,3 +169,26 @@ class ZhihuAnswerItem(scrapy.Item):
     update_time = scrapy.Field()
     crawl_time = scrapy.Field()
 
+    def get_insert_sql(self):
+        # 插入知乎question表的sql语句
+        insert_sql = """
+                    insert into zhihu_answer(zhihu_id, url, question_id, author_id, content, praise_num, comments_num, 
+                    create_time, update_time, crawl_time) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+
+        # 因为json的两个time从json中传递过来时是int类型，所以要对create_time  update_time做单独处理,将int型转换为datetime型
+        create_time = datetime.datetime.fromtimestamp(self["create_time"])
+        update_time = datetime.datetime.fromtimestamp(self["update_time"])
+
+        # 因为提取answer代码处是提取具体字段，不再是数组，可以直接返回
+        params = (
+            self["zhihu_id"], self["url"], self["question_id"], self["author_id"], self["content"],
+            self["praise_num"], self["comments_num"], create_time, update_time,
+            self["crawl_time"].strftime(SQL_DATETIME_FORMAT),
+        )
+
+        return insert_sql, params
+
+
+
