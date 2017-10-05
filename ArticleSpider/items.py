@@ -15,6 +15,9 @@ from scrapy.loader.processors import MapCompose
 from scrapy.loader.processors import TakeFirst
 from scrapy.loader.processors import Join
 
+from .settings import SQL_DATE_FORMAT, SQL_DATETIME_FORMAT
+from .utils.common import extract_num
+
 
 class ArticlespiderItem(scrapy.Item):
     # define the fields for your item here like:
@@ -99,6 +102,14 @@ class JobBoleArticleItem(scrapy.Item):
     )
     content = scrapy.Field()
 
+    def get_insert_sql(self):
+        insert_sql = """
+                    insert into jobbole_article(title, url, create_date, fav_nums) 
+                    VALUES (%s, %s, %s, %s)
+                """
+        params = (self["title"], self["url"], self["create_date"], self["fav_nums"])
+        return insert_sql, params
+
 
 class ZhihuQuestionItem(scrapy.Item):
     # 知乎的问题 item
@@ -112,6 +123,37 @@ class ZhihuQuestionItem(scrapy.Item):
     watch_user_num = scrapy.Field()
     click_num = scrapy.Field()
     crawl_time = scrapy.Field()
+
+    def get_insert_sql(self):
+        # 插入知乎question表的sql语句
+        insert_sql = """
+                    insert into zhihu_question(zhihu_id, topics, url, title, content, answer_num, comments_num, 
+                    watch_user_num, click_num, crawl_time) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+
+        zhihu_id = self["zhihu_id"][0]  # the other way -- int("".join(self["zhihu_id"])) 转int，因为在数据库中是int类型 这里不用是因为zhihu.py中已经处理过
+        topics = ",".join(self["topics"])
+        url = self["url"][0]         # "".join(self["zhihu_id"])
+        title = "".join(self["title"])
+        content = "".join(self["content"])
+        answer_num = extract_num("".join(self["answer_num"]))
+        comments_num = extract_num("".join(self["comments_num"]))
+        # watch_user_num = extract_num("".join(self["watch_user_num"]))
+        crawl_time = datetime.datetime.now().strftime(SQL_DATETIME_FORMAT)     # strftime 将time转化为时间类型
+
+        # 处理click_num的问题
+        if len(self["watch_user_num"]) == 2:
+            watch_user_num = int(self["watch_user_num"][0])
+            click_num = int(self["watch_user_num"][1])
+        else:
+            watch_user_num = int(self["watch_user_num"][0])
+            click_num = 0
+
+        # 和insert into中的各个值顺序保持一致
+        params = (zhihu_id, topics, url, title, content, answer_num, comments_num, watch_user_num, click_num, crawl_time)
+
+        return insert_sql, params
 
 
 class ZhihuAnswerItem(scrapy.Item):

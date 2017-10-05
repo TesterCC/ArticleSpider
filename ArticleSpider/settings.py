@@ -116,3 +116,7 @@ MYSQL_DBNAME = 'article_spider'
 MYSQL_USER = 'root'
 MYSQL_PASSWORD = "yanxi76543210"
 
+# SQL date format config
+SQL_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+SQL_DATE_FORMAT = "%Y-%m-%d"
+
