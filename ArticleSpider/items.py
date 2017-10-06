@@ -105,7 +105,7 @@ class JobBoleArticleItem(scrapy.Item):
     def get_insert_sql(self):
         insert_sql = """
                     insert into jobbole_article(title, url, create_date, fav_nums) 
-                    VALUES (%s, %s, %s, %s)
+                    VALUES (%s, %s, %s, %s) ON DUPLICATE KEY UPDATE title=VALUES(title), fav_nums=VALUES(fav_nums)
                 """
         params = (self["title"], self["url"], self["create_date"], self["fav_nums"])
         return insert_sql, params
@@ -130,6 +130,8 @@ class ZhihuQuestionItem(scrapy.Item):
                     insert into zhihu_question(zhihu_id, topics, url, title, content, answer_num, comments_num, 
                     watch_user_num, click_num, crawl_time) 
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE content=VALUES(content), answer_num=VALUES(answer_num), comments_num=VALUES(comments_num),
+                    watch_user_num=VALUES(watch_user_num), click_num=VALUES(click_num), crawl_time=VALUES(crawl_time)
         """
 
         zhihu_id = self["zhihu_id"][0]  # the other way -- int("".join(self["zhihu_id"])) 转int，因为在数据库中是int类型 这里不用是因为zhihu.py中已经处理过
@@ -173,8 +175,9 @@ class ZhihuAnswerItem(scrapy.Item):
         # 插入知乎question表的sql语句
         insert_sql = """
                     insert into zhihu_answer(zhihu_id, url, question_id, author_id, content, praise_num, comments_num, 
-                    create_time, update_time, crawl_time) 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    create_time, update_time, crawl_time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) 
+                    ON DUPLICATE KEY UPDATE content=VALUES(content), praise_num=VALUES(praise_num), comments_num=VALUES(comments_num),
+                    update_time=VALUES(update_time)
         """
 
         # 因为json的两个time从json中传递过来时是int类型，所以要对create_time  update_time做单独处理,将int型转换为datetime型

@@ -57,8 +57,10 @@ class ZhihuSpider(scrapy.Spider):
 
                 # scrapy中通过yield将requests提交给下载器
                 yield scrapy.Request(request_url, headers=self.headers, callback=self.parse_question)
+                # break  # for debug answer
             else:
                 # 如果不是question页面则直接进一步跟踪
+                # pass    # comment for debug answer
                 yield scrapy.Request(url, headers=self.headers, callback=self.parse)   # 不写callback=XX也可以,回调默认会调parse()
 
     def parse_question(self, response):
@@ -81,7 +83,7 @@ class ZhihuSpider(scrapy.Spider):
             item_loader.add_css("topics", ".QuestionHeader-topics .Popover div::text")   # 子带元素中寻找元素  div是后代节点，多少层都能找
             # item_loader.add_xpath("topics", "//*[@id='root']/div/main/div/meta[3]")    # 提取的整个标签, 可以考虑以后用正则表达式处理
             question_item = item_loader.load_item()
-            pass
+
         else:
             # 处理知乎旧版本页面的item提取 -- 实际现在应该都是新版本了。
             match_obj = re.match("(.*zhihu.com/question/(\d+))(/|$).*", response.url)
@@ -100,7 +102,7 @@ class ZhihuSpider(scrapy.Spider):
             question_item = item_loader.load_item()
 
         yield scrapy.Request(self.start_answer_url.format(question_id, 20, 0), headers=self.headers, callback=self.parse_answer)
-        yield question_item
+        yield question_item   # comment for debug answer
 
     def parse_answer(self, response):
         # 处理question的answer
@@ -127,7 +129,6 @@ class ZhihuSpider(scrapy.Spider):
 
         if not is_end:
             yield scrapy.Request(next_url, headers=self.headers, callback=self.parse_answer)
-
 
     # crawler entery
     def start_requests(self):
