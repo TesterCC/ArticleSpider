@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+just for solve zhihu login issue, manual input captcha
+"""
+
 import re
 import requests
 import time
@@ -72,7 +76,6 @@ def get_captcha():
     # https://www.zhihu.com/captcha.gif?r=1492648311082&type=login&lang=cn   倒立汉字
     import time
     t = str(int(time.time()*1000))     # 默认情况下python的时间戳是以秒为单位输出的float,通过把秒转换毫秒的方法获得13位的Unix时间戳
-    # t = str(round(time.time() * 1000))
     captcha_url = "https://www.zhihu.com/captcha.gif?r={0}&type=login&lang=en".format(t)
     print(captcha_url)
     t = session.get(captcha_url, headers=header)
