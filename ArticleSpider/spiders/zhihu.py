@@ -13,8 +13,9 @@ except:
     from urllib import parse    # Python3
 
 import scrapy
-
 from scrapy.loader import ItemLoader
+from zheye import zheye
+
 from ..items import ZhihuQuestionItem, ZhihuAnswerItem
 
 
@@ -150,8 +151,8 @@ class ZhihuSpider(scrapy.Spider):
             return "Match failed."
 
         # Attention Security
-        username = input("Pleaes input username(phone):\n>>")     # only mobile phone，因为下面post_url访问的是phone_num登录入口
-        password = input("Pleaes input password:\n>>")
+        username = input("Please input username(phone):\n>>")     # only mobile phone，因为下面post_url访问的是phone_num登录入口
+        password = input("Please input password:\n>>")
 
         if xsrf:
             post_url = "https://www.zhihu.com/login/phone_num"  # video url, phone number login
@@ -166,10 +167,65 @@ class ZhihuSpider(scrapy.Spider):
 
             t = str(int(time.time() * 1000))
             captcha_url = "https://www.zhihu.com/captcha.gif?r={0}&type=login&lang=en".format(t)
-            # 下面可打breakpoint debug
-            yield scrapy.Request(captcha_url, headers=self.headers, meta={"post_data": post_data}, callback=self.login_after_captcha)  # self.login_after_cpatcha()
 
-# 也可以从response中拿到cookie，再设置到request中，是另外一种解决方案，这里未实现
+            # debug recognize Chinese captcha
+            captcha_url_cn = "https://www.zhihu.com/captcha.gif?r={0}&type=login&lang=cn".format(t)
+            yield scrapy.Request(captcha_url_cn, headers=self.headers, meta={"post_data": post_data},
+                                 callback=self.login_after_captcha_cn)
+
+            # 下面可打breakpoint debug -- comment because use captcha_url_cn can auto login, use Machine Learning.
+            # yield scrapy.Request(captcha_url, headers=self.headers, meta={"post_data": post_data},
+            #                      callback=self.login_after_captcha)  # self.login_after_cpatcha()
+
+    # 特别处理
+    def login_after_captcha_cn(self, response):
+        # 知乎倒立汉字验证识别码登录
+        # 1st -- save captcha pic
+        with open("captcha.jpg", "wb") as f:
+            f.write(response.body)  # different from scrapy
+            f.close()
+
+        # 2ed -- use zheye to recognize coordinate
+        z = zheye()
+        positions = z.Recognize('captcha.jpg')
+        print(positions)   # for debug
+
+        # 3rd -- judge coordinate   处理顺序比较好，因为有的验证码要求按顺序点击
+        pos_arr = []
+        if len(positions) == 2:
+            if positions[0][1] > positions[1][1]:        # [(y2,x2),(y1,x1)]
+                pos_arr.append([positions[1][1], positions[1][0]])      # 第一个坐标 (x1,y1)
+                pos_arr.append([positions[0][1], positions[0][0]])      # 第二个坐标 (x2,y2)
+            else:
+                pos_arr.append([positions[0][1], positions[0][0]])
+                pos_arr.append([positions[1][1], positions[1][0]])
+        else:
+            # 如果仅有一个文字倒立
+            pos_arr.append([positions[0][1], positions[0][0]])     # (x, y)
+
+        post_url = "https://www.zhihu.com/login/phone_num"
+        post_data = response.meta.get("post_data", {})
+
+        # pos_arr坐标顺序已经调整为正常(x,y),故可正常提取
+        # 判断是一个坐标还是两个坐标
+        if len(positions) == 2:
+            post_data["captcha"] = '{"img_size": [200, 44], "input_points": [[%.2f, %f],[%.2f, %f]]}' % (pos_arr[0][0] / 2, pos_arr[0][1] / 2, pos_arr[1][0]/2, pos_arr[1][1] / 2)
+        else:
+            post_data["captcha"] = '{"img_size": [200, 44], "input_points": [[%.2f, %f]}' % (pos_arr[0][0] / 2, pos_arr[0][1] / 2)
+
+        # 保证正确率，设置captcha_type
+        post_data["captcha_type"] = "cn"
+
+        # FormRequest()可以完成表单提交
+        return [scrapy.FormRequest(
+            url=post_url,
+            formdata=post_data,
+            headers=self.headers,
+            callback=self.check_login  # 不传递函数调用，只传递函数名称
+        )]
+
+
+    # 也可以从response中拿到cookie，再设置到request中，是另外一种解决方案，这里未实现
     def login_after_captcha(self, response):
         # save captcha pic logic
         with open("captcha.jpg", "wb") as f:
@@ -180,13 +236,14 @@ class ZhihuSpider(scrapy.Spider):
         try:
             im = Image.open('captcha.jpg')
             im.show()
-            # im.close()   # 可以注释，会报错
+            # im.close()   # 可以注释，会报错  或者except: pass
         except:
             return "Image Handle Error."
 
         captcha = input("请输入英文字母验证码\n>>")
 
-        post_data = response.meta.get("post_data")
+        # post data logic
+        post_data = response.meta.get("post_data", {})
         post_url = "https://www.zhihu.com/login/phone_num"
         post_data["captcha"] = captcha
 

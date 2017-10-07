@@ -70,6 +70,7 @@ password = input("Pleaes input password:\n>>")
 params = {
     '_xsrf': xsrf,
     'password': password,
+    # 未处理坐标顺序问题，故获取坐标时要注意
     'captcha': '{"img_size": [200, 44], "input_points": [[%.2f, %f],[%.2f, %f]]}' % (pos[0][1] / 2, pos[0][0] / 2, pos[1][1]/2, pos[1][0] / 2),
     # here: 1st is x axis, 2ed is y axis
     # 'captcha': str(captcha)
