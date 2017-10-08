@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 
 
 # Scrapy settings for ArticleSpider project
@@ -83,6 +84,12 @@ project_dir = os.path.abspath(os.path.dirname(__file__))
 IMAGES_URLS_FIELD = 'front_image_url'     # 传到pipeline时将这个值当数组处理
 IMAGES_STORE = os.path.join(project_dir, 'images')
 # print(">>>>>>>>>>>>>>>>>"+IMAGES_STORE)
+
+# 设置ArticleSpider为Sources Root
+BASE_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+# print(BASE_DIR)
+sys.path.insert(0, os.path.join(BASE_DIR, 'ArticleSpider'))
+# sys.path.insert(0, "/Users/TesterCC/Development/scrapy_workspace/ArticleSpider/ArticleSpider")
 
 # download pictures must bigger 100x100
 # IMAGES_MIN_HEIGHT = 100

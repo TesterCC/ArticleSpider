@@ -224,7 +224,6 @@ class ZhihuSpider(scrapy.Spider):
             callback=self.check_login  # 不传递函数调用，只传递函数名称
         )]
 
-
     # 也可以从response中拿到cookie，再设置到request中，是另外一种解决方案，这里未实现
     def login_after_captcha(self, response):
         # save captcha pic logic
@@ -254,7 +253,6 @@ class ZhihuSpider(scrapy.Spider):
             headers=self.headers,
             callback=self.check_login  # 不传递函数调用，只传递函数名称
         )]
-
 
     def check_login(self, response):
         # 验证服务器的返回数据判断是否成功
