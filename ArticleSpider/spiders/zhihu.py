@@ -16,7 +16,7 @@ import scrapy
 from scrapy.loader import ItemLoader
 from zheye import zheye
 
-from ..items import ZhihuQuestionItem, ZhihuAnswerItem
+from items import ZhihuQuestionItem, ZhihuAnswerItem
 
 
 class ZhihuSpider(scrapy.Spider):
@@ -32,6 +32,10 @@ class ZhihuSpider(scrapy.Spider):
         "HOST": "www.zhihu.com",
         "Referer": "https://www.zhihu.com/",
         "User-Agent": agent
+    }
+
+    custom_settings = {
+        "COOKIES_ENABLED": True
     }
 
     def parse(self, response):

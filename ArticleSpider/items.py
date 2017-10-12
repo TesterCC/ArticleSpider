@@ -15,8 +15,8 @@ from scrapy.loader.processors import MapCompose
 from scrapy.loader.processors import TakeFirst
 from scrapy.loader.processors import Join
 
-from .settings import SQL_DATE_FORMAT, SQL_DATETIME_FORMAT
-from .utils.common import extract_num
+from settings import SQL_DATE_FORMAT, SQL_DATETIME_FORMAT
+from utils.common import extract_num
 
 
 class ArticlespiderItem(scrapy.Item):
@@ -194,4 +194,28 @@ class ZhihuAnswerItem(scrapy.Item):
         return insert_sql, params
 
 
+class LagouJobItemLoader(ItemLoader):
+    # 自定义ItemLoader
+    default_output_processor = TakeFirst()
+
+
+class LagouJobItem(scrapy.Item):
+    # 拉勾网职位信息
+    # 参考数据库字段
+    title = scrapy.Field()
+    url = scrapy.Field()
+    url_object_id = scrapy.Field()
+    salary = scrapy.Field()
+    job_city = scrapy.Field()
+    work_years = scrapy.Field()
+    degree_need = scrapy.Field()
+    job_type = scrapy.Field()
+    publish_time = scrapy.Field()
+    job_advantage = scrapy.Field()
+    job_desc = scrapy.Field()
+    job_addr = scrapy.Field()
+    company_name = scrapy.Field()
+    company_url = scrapy.Field()
+    tags = scrapy.Field()
+    crawl_time = scrapy.Field()
 
