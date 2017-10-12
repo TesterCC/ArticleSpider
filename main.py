@@ -16,6 +16,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # execute(["scrapy", "crawl", "jobbole4loader"])    # run command in terminal "scrapy crawl jobbole4loader"
 # execute(["scrapy", "crawl", "jobbole5customloader"])    # run command in terminal "scrapy crawl jobbole4loader"
 
-execute(["scrapy", "crawl", "zhihu"])
+# execute(["scrapy", "crawl", "zhihu"])
 
-# execute(["scrapy", "crawl", "lagou"])
+execute(["scrapy", "crawl", "lagou"])

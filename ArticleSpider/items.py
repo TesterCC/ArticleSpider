@@ -15,8 +15,10 @@ from scrapy.loader.processors import MapCompose
 from scrapy.loader.processors import TakeFirst
 from scrapy.loader.processors import Join
 
-from .settings import SQL_DATE_FORMAT, SQL_DATETIME_FORMAT
-from .utils.common import extract_num
+from settings import SQL_DATE_FORMAT, SQL_DATETIME_FORMAT
+from utils.common import extract_num
+
+from w3lib.html import remove_tags      # for remove tags
 
 
 class ArticlespiderItem(scrapy.Item):
@@ -194,4 +196,46 @@ class ZhihuAnswerItem(scrapy.Item):
         return insert_sql, params
 
 
+# About lagou spider
+def remove_slash(value):
+    # 去掉工作城市的斜线
+    return value.replace("/", "")
+
+
+class LagouJobItemLoader(ItemLoader):
+    # 自定义ItemLoader
+    default_output_processor = TakeFirst()
+
+
+class LagouJobItem(scrapy.Item):
+    # 拉勾网职位信息
+    # 参考数据库字段
+    title = scrapy.Field()
+    url = scrapy.Field()
+    url_object_id = scrapy.Field()
+    salary = scrapy.Field()
+    job_city = scrapy.Field(
+        input_processor=MapCompose(remove_slash),
+    )
+    work_years = scrapy.Field(
+        input_processor=MapCompose(remove_slash),
+    )
+    degree_need = scrapy.Field(
+        input_processor=MapCompose(remove_slash),
+    )
+    job_type = scrapy.Field()
+    publish_time = scrapy.Field()
+    job_advantage = scrapy.Field()
+    job_desc = scrapy.Field(
+        input_processor=MapCompose(remove_tags),
+    )
+    job_addr = scrapy.Field()
+    company_name = scrapy.Field()
+    company_url = scrapy.Field()
+    tags = scrapy.Field(
+        input_processor=Join(","),
+    )
+    crawl_time = scrapy.Field(
+        input_processor=MapCompose(date_convert),
+    )
 
