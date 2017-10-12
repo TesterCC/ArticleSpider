@@ -47,7 +47,7 @@ class LagouSpider(CrawlSpider):        # 不能重写parse函数了,重载要用
         item_loader.add_xpath("degree_need", "//*[@class='job_request']/p/span[4]/text()")
         item_loader.add_xpath("job_type", "//*[@class='job_request']/p/span[5]/text()")
         item_loader.add_css("tags", ".position-label li::text")
-        item_loader.add_css("publish_time", ".publish_time::text")
+        item_loader.add_css("publish_time", ".publish_time::text")     # need to convert str and split
         item_loader.add_css("job_advantage", ".job-advantage p::text")
         item_loader.add_css("job_desc", ".job_bt div")
         item_loader.add_css("job_addr", ".work_addr")
