@@ -12,6 +12,7 @@ from items import LagouJobItemLoader, LagouJobItem
 from ArticleSpider.utils.common import get_md5
 
 
+# switch ip when crawl lagou
 class LagouSpider(CrawlSpider):        # 不能重写parse函数了,重载要用这个函数parse_start_url
     name = 'lagou'
     allowed_domains = ['www.lagou.com']
