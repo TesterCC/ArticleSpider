@@ -118,7 +118,9 @@ class GetIP(object):
 
 
 if __name__ == '__main__':
+    # 要写在main函数内，不然import这个文件时会执行下面两个函数
     get_ip = GetIP()
-    get_ip.get_random_ip()     
+    get_ip.get_random_ip()
     # print(crawl_ips())  for debug
+
 
