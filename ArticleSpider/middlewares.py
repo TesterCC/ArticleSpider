@@ -9,6 +9,7 @@ from scrapy import signals
 
 from fake_useragent import UserAgent
 
+
 class ArticlespiderSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
@@ -82,4 +83,6 @@ class RandomUserAgentMiddleWare(object):
         # random_agent = get_ua()    # for Debug, can comment
 
         request.headers.setdefault('User-Agent', get_ua())
+        # request.meta["proxy"] = "http://27.40.131.122:61234"
+
 
