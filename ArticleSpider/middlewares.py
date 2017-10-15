@@ -6,8 +6,10 @@
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
-
 from fake_useragent import UserAgent
+
+from tools.crawl_xici_ip import GetIP
+
 
 class ArticlespiderSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -57,13 +59,13 @@ class ArticlespiderSpiderMiddleware(object):
         spider.logger.info('Spider opened: %s' % spider.name)
 
 
-class RandomUserAgentMiddleWare(object):
+class RandomUserAgentMiddleware(object):
     # 随机更换user-agent
 
     # receive crawler
     def __init__(self, crawler):
         # 用父类方法做初始化
-        super(RandomUserAgentMiddleWare, self).__init__()
+        super(RandomUserAgentMiddleware, self).__init__()
         # self.user_agent_list = crawler.settings.get("user_agent_list", [])    # get settings->user_agent_list
         self.ua = UserAgent()
         self.ua_type = crawler.settings.get("RANDOM_UA_TYPE", "random")     # get settings.py -> RANDOM_UA_TYPE, default is "random"
@@ -82,4 +84,16 @@ class RandomUserAgentMiddleWare(object):
         # random_agent = get_ua()    # for Debug, can comment
 
         request.headers.setdefault('User-Agent', get_ua())
+
+
+class RandomProxyMiddleware(object):
+
+    """
+    动态设置IP代理
+    """
+    def process_request(self, request, spider):
+        get_ip = GetIP()   # 实例化
+        request.meta["proxy"] = get_ip.get_random_ip()
+
+
 
