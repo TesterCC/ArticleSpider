@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import scrapy
 import re
 import datetime
 
+import scrapy
 from urllib import parse
 from scrapy.http import Request
 from scrapy.loader import ItemLoader
-
+from scrapy.xlib.pydispatch import dispatcher
+from scrapy import signals
+from selenium import webdriver
 
 from ArticleSpider.items import JobBoleArticleItem, ArticleItemLoader
 from ArticleSpider.utils.common import get_md5
@@ -23,6 +25,17 @@ class JobboleSpider(scrapy.Spider):
     allowed_domains = ["blog.jobbole.com"]
     start_urls = ['http://blog.jobbole.com/all-posts/']   # Get all article http://blog.jobbole.com/all-posts/
 
+    # 解决每次都要打开一个Chrome Browser的问题
+    def __init__(self):
+        self.browser = webdriver.Chrome(executable_path="chromedriver")
+        super(JobboleSpider, self).__init__()
+        dispatcher.connect(self.spider_closed, signals.spider_closed)
+
+    def spider_closed(self, spider):
+        # 当爬虫退出的时候关闭Chrome
+        self.browser.quit()
+        print("spider browser driver closed")
+
     def parse(self, response):
         """
         1. 获取文章列表页中的文章url并交给scrapy下载后进行解析
@@ -32,7 +45,6 @@ class JobboleSpider(scrapy.Spider):
         # http://blog.jobbole.com/all-posts/
 
         post_nodes = response.css("#archive .floated-thumb .post-thumb a")
-
 
         for post_node in post_nodes:
             image_url = post_node.css("img::attr(src)").extract_first("")
@@ -45,7 +57,6 @@ class JobboleSpider(scrapy.Spider):
         next_url = response.css(".next.page-numbers::attr(href)").extract_first("")      # .next.page-numbers 不加空格表示在同一节点
         if next_url:
             yield Request(url=parse.urljoin(response.url, post_url), callback=self.parse)
-
 
     def parse_detail(self, response):
 

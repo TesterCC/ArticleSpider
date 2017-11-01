@@ -5,7 +5,12 @@
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
+from time import sleep
+
+from selenium import webdriver
 from scrapy import signals
+from scrapy.selector import Selector
+from scrapy.http import HtmlResponse
 from fake_useragent import UserAgent
 
 from tools.crawl_xici_ip import GetIP
@@ -90,10 +95,38 @@ class RandomProxyMiddleware(object):
 
     """
     动态设置IP代理
+    settings.py -> DOWNLOADER_MIDDLEWARES 配置后才会生效
     """
     def process_request(self, request, spider):
         get_ip = GetIP()   # 实例化
         request.meta["proxy"] = get_ip.get_random_ip()
+
+
+# scrapy集成Selenium
+class JSPageMiddleware(object):
+    """
+    通过Chrome请求动态网页
+    settings.py -> DOWNLOADER_MIDDLEWARES 配置后才会生效
+    """
+    def process_request(self, request, spider):
+        if spider.name == "jobbole5customloader":     # jobbole是class JobboleSpider中name
+            # 实际开发中可能只是处理一部分url
+            spider.browser.get(request.url)    # 如果spider中没有定义name，会抛异常
+            sleep(3)
+            print("访问:{0}".format(request.url))
+
+            # 请求后不要转到downloader下载器
+            return HtmlResponse(url=spider.browser.current_url, body=spider.browser.page_source, encoding="utf-8", request=request)   # Default encoding is ascii
+
+        # 使用Selenium模拟用户访问，实现未登录访问拉勾网
+        if spider.name == "lagou_selenium":     # jobbole是class JobboleSpider中name
+            # 实际开发中可能只是处理一部分url
+            spider.browser.get(request.url)    # 如果spider中没有定义name，会抛异常
+            sleep(4)    # 5s test passed
+            print("访问:{0}".format(request.url))
+
+            # 请求后不要转到downloader下载器
+            return HtmlResponse(url=spider.browser.current_url, body=spider.browser.page_source, encoding="utf-8", request=request)
 
 
 
