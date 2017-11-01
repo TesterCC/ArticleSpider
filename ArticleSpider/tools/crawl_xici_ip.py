@@ -30,7 +30,7 @@ def crawl_ips():
     for i in range(500):    # 2450是xici的代理页数，以后肯定还会持续增加
         re = requests.get("http://www.xicidaili.com/nn/{0}".format(i), headers=headers)
         # print(re.text)   # for Debug
-        sleep(3)   # 以防被block，xici封的应该是IP
+        sleep(5)   # 以防被block，xici封的应该是IP
 
         # 用scrapy的selector提取数据
         selector = Selector(text=re.text)
