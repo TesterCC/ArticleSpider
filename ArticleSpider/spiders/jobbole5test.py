@@ -21,20 +21,23 @@ from ArticleSpider.utils.common import get_md5
 
 
 class JobboleSpider(scrapy.Spider):
-    name = "jobbole5customloader"
+    name = "jobbole5test"
     allowed_domains = ["blog.jobbole.com"]
-    start_urls = ['http://blog.jobbole.com/all-posts/']   # Get all article http://blog.jobbole.com/all-posts/
+    # start_urls = ['http://blog.jobbole.com/all-posts/']   # Get all article http://blog.jobbole.com/all-posts/
+    start_urls = ['http://blog.jobbole.com/allttt/']   # Get all article http://blog.jobbole.com/all-posts/
 
-    # 解决每次都要打开一个Chrome Browser的问题 -- 爬取动态网页时可以用下面这个
-    # def __init__(self):
-    #     self.browser = webdriver.Chrome(executable_path="chromedriver")
-    #     super(JobboleSpider, self).__init__()
-    #     dispatcher.connect(self.spider_closed, signals.spider_closed)
-    #
-    # def spider_closed(self, spider):
-    #     # 当爬虫退出的时候关闭Chrome
-    #     self.browser.quit()
-    #     print("spider browser driver closed")
+    # 8-10 scrapy的数据收集
+    # 收集伯乐在线所有404的url以及404页面数
+    handle_httpstatus_list = [404]
+
+    def __init__(self):
+        self.fail_urls = []    # 用这个对象来保存所有404的页面
+        dispatcher.connect(self.handle_spider_closed, signals.spider_closed)
+
+    # 8-11 scrapy信号详解
+    def handle_spider_closed(self):
+        self.crawler.stats.set_value("failed_urls,", ",".join(self.fail_urls))
+        pass
 
     def parse(self, response):
         """
@@ -43,6 +46,10 @@ class JobboleSpider(scrapy.Spider):
         """
         # 解析列表页中的所有文章url并交给scrapy下载后并进行解析
         # http://blog.jobbole.com/all-posts/
+
+        if response.status == 404:
+            self.fail_urls.append(response.url)
+            self.crawler.stats.inc_value("failed_url")   # 即使没有也会生成默认值
 
         post_nodes = response.css("#archive .floated-thumb .post-thumb a")
 

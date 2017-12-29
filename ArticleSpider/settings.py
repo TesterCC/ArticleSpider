@@ -51,14 +51,14 @@ COOKIES_ENABLED = False
 
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
+# SPIDER_MIDDLEWARES = {
 #    'ArticleSpider.middlewares.ArticlespiderSpiderMiddleware': 543,
-#}
+# }
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-   'ArticleSpider.middlewares.JSPageMiddleware': 1,
+   'ArticleSpider.middlewares.JSPageMiddleware': 1,    # 动态网页爬取才需要，比如用Selenium爬取
    # 'ArticleSpider.middlewares.RandomUserAgentMiddleware': 543,
    # 'ArticleSpider.middlewares.RandomProxyMiddleware': 542,
    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
