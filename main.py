@@ -22,4 +22,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # execute(["scrapy", "crawl", "lagoulogin"])
 # execute(["scrapy", "crawl", "lagou_selenium"])
 
-execute(["scrapy", "crawl", "jobbole5test"])
+# execute(["scrapy", "crawl", "jobbole5test"])
+
+execute(["scrapy", "crawl", "zhihu_sel"])
