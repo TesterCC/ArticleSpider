@@ -75,8 +75,9 @@ class ZhihuSpider(scrapy.Spider):
         from selenium import webdriver
         # browser = webdriver.Chrome(executable_path="E:/test/chromedriver.exe")
 
-        options = webdriver.ChromeOptions()
-        options.add_experimental_option("excludeSwitches", ["ignore-certificate-errors"])
+        # options = webdriver.ChromeOptions()
+        # options.add_experimental_option("excludeSwitches", ["ignore-certificate-errors"])
+        # browser = webdriver.Chrome(chrome_options=options)
         browser = webdriver.Chrome()
         # 某些高版本的mac os /usr/bin/没有复制权限，可以将driver复制到/usr/local/bin, path会优先去找这个路径, 在系统path中放了chromedriver就不用指定路径
 

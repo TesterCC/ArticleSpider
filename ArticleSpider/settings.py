@@ -22,6 +22,7 @@ NEWSPIDER_MODULE = 'ArticleSpider.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'ArticleSpider (+http://www.yourdomain.com)'
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
@@ -32,14 +33,14 @@ ROBOTSTXT_OBEY = False
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-# DOWNLOAD_DELAY = 5
+DOWNLOAD_DELAY = 10
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
 COOKIES_ENABLED = True
-
+# COOKIES_DEBUG = True
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
 
@@ -61,7 +62,7 @@ DOWNLOADER_MIDDLEWARES = {
    'ArticleSpider.middlewares.JSPageMiddleware': 1,    # 动态网页爬取才需要，比如用Selenium爬取
    # 'ArticleSpider.middlewares.RandomUserAgentMiddleware': 543,
    # 'ArticleSpider.middlewares.RandomProxyMiddleware': 542,
-   'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+   'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': 2,   # 从settings中的获取User-Agent的值
 }
 
 # Enable or disable extensions
